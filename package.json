@@ -1,0 +1,48 @@
+{
+  "name": "mantiq",
+  "author": "Amine Ben hammou (@webNeat)",
+  "description": "Write AI prompts and skills in Typescript",
+  "keywords": [],
+  "license": "MIT",
+  "version": "0.0.0",
+  "repository": "webNeat/mantiq",
+  "homepage": "https://github.com/webNeat/mantiq",
+  "type": "module",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test-watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "release": "pnpm build && changeset publish",
+    "version": "changeset version && pnpm install --no-frozen-lockfile"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^25.0.9",
+    "@webneat/codewiki": "^0.0.6",
+    "expect-type": "^1.3.0",
+    "prettier": "^3.8.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17"
+  }
+}
