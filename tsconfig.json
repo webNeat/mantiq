@@ -1,4 +1,12 @@
 {
   "extends": "@total-typescript/tsconfig/bundler/no-dom",
-  "exclude": ["node_modules", "dist", "archive"]
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"]
+    },
+    "types": ["node"]
+  },
+  "exclude": ["node_modules", "dist", "archive", "tests/examples"]
 }

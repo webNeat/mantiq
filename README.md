@@ -23,15 +23,17 @@ Human language is inherently ambiguous and when we add that to LLMs tendency to 
 
 ## Requirements
 
-- Node.js 24+
-- A harness that supports skills (claude code, codex, opencode, copilot, cursor, windsurf, etc.)
+- [Node.js 24+](https://nodejs.org/)
+- A harness/agent that supports skills (claude code, codex, opencode, copilot, cursor, windsurf, etc.)
 
 ## Installation
 
 1. Install the CLI globally
+
 ```bash
 npm install -g mantiq
 ```
+
 2. Generate the skill file with `mantiq skill`. This will create a `SKILL.md` file in the current directory.
 3. Add the skill file to your harness.
 
@@ -48,6 +50,7 @@ Let's say you have a long list of pending reviews on your platform and you want 
 You want the agent to use your API to read the pending reviews one by one and decide whether to approve or reject them.
 
 **Constraints:**
+
 - You don't have an MCP server to connect to your API
 - You don't have custom tools/plugins for your harness to connect to your API
 - You already can easily write TypeScript functions that connect to your API but you don't want to expose the source code or the API keys to the agent
@@ -57,19 +60,34 @@ You want the agent to use your API to read the pending reviews one by one and de
 Use the following mantiq prompt:
 
 ```ts
-import { think } from 'mantiq';
-import { has_pending_reviews, get_next_review, approve_review, reject_review } from './my-internal-api';
+import { think } from 'mantiq'
 
 export async function main() {
   while (await has_pending_reviews()) {
-    const review = await get_next_review();
-    const contains_offensive_language = await think<boolean>(`Does this review contain offensive language? ${review.text}`);
+    const review = await get_next_review()
+    const contains_offensive_language = await think<boolean>(`Does this review contain offensive language? ${review.text}`)
     if (contains_offensive_language) {
-      await reject_review(review.id);
+      await reject_review({ id: review.id })
     } else {
-      await approve_review(review.id);
+      await approve_review({ id: review.id })
     }
   }
+}
+
+export async function has_pending_reviews(): Promise<boolean> {
+  // your implementation here
+}
+
+export async function get_next_review(): Promise<{ id: string; text: string }> {
+  // your implementation here
+}
+
+export async function approve_review({ id }: { id: string }): Promise<void> {
+  // your implementation here
+}
+
+export async function reject_review({ id }: { id: string }): Promise<void> {
+  // your implementation here
 }
 ```
 
@@ -79,19 +97,22 @@ export async function main() {
 - The harness loads the mantiq skill
 - The skill instruct the agent to run the command `mantiq code <filename>` and interpret the code as a TypeScript runtime.
 - The code returned by `mantiq code` command only contains the `main` function and declarations of other functions used by the main function. So for the example above, the code would be
+
 ```ts
-declare function has_pending_reviews(): Promise<boolean>;
-declare function get_next_review(): Promise<{ id: string; text: string }>;
-declare function approve_review(id: string): Promise<void>;
-declare function reject_review(id: string): Promise<void>;
+declare function has_pending_reviews(): Promise<boolean>
+declare function get_next_review(): Promise<{ id: string; text: string }>
+declare function approve_review({ id }: { id: string }): Promise<void>
+declare function reject_review({ id }: { id: string }): Promise<void>
 
 async function main() {
   // all main code ...
 }
 ```
+
 Note that:
-  - All imports and functions other than `main` are removed, and only the declarations of the functions used by `main` are added at the top.
-  - The special function `think` is not included in the declarations.
+
+- All imports and functions other than `main` are removed, and only the declarations of the functions used by `main` are added at the top.
+- The special function `think` is not included in the declarations.
 - The agent executes the code, line by line
 - When the agent encounters a call to one of the declared functions, it runs `mantiq call <filename> <fn-name> <args>` to execute the function
 - When the agent encounters a call to `think`, it thinks about the question and returns the answer in the specified type
@@ -100,30 +121,56 @@ Note that `think` is not the only special function, The [Writing mantiq prompts]
 
 ## Writing mantiq prompts
 
-A mantiq prompt is a TypeScript file that exports a `main` function, this is the function that will be executed by the agent.
+A mantiq prompt is a TypeScript file of the following format:
 
-The `main` function can call other functions defined in the same file or imported from other files. The agent will only see the declarations of those functions and will call them using the `mantiq call` command.
+```ts
+import { act, think } from 'mantiq'
+import { foo } from './foo'
 
-The `mantiq` package also provides a list of special functions that can be used in the `main` function to direct the agent's behavior:
+export { foo }
+
+export function bar() {
+  // your implementation here
+}
+
+export async function main() {
+  // can use `foo`, `bar`, `act`, `think` functions here
+}
+```
+
+### Rules
+
+- A mantiq prompt must export a `main` function, this is the entry point that is executed by the agent.
+- The `main` function can call other functions, but those functions must be exported too (like `foo` and `bar` in the example above).
+- The `main` function can use the special functions `act` and `think` provided by the `mantiq` package. These don't have to be exported.
+- All exported functions must be stateless (do not rely on global variables shared between different calls), because the `mantiq call` command will call them on a separate process each time.
+- All exported functions must have at most one parameter. if the function needs multiple parameters, they should be passed as a single object.
+- The special functions (`think` and `act`) can only be called from the `main` function. Calling them from other functions will result in an error.
+
+I know these rules limit how flexible mantiq prompts can be, but they are necessary to make the implementation easy and bug free. Feel free to open an issue if you have a use case that requires more flexibility and I will try to reduce the restrictions.
+
+### Special functions
+
+The `mantiq` package provides a list of special functions that can be used in the `main` function to direct the agent's behavior:
 
 ### `think`
 
 Tells the agent to think about a question and return the answer in the specified type.
 
 ```ts
-function think<T>(question: string): Promise<T>;
+function think<T>(question: string): Promise<T>
 ```
 
 **Examples:**
 
 ```ts
 const message = `some text ...`
-const sentiment = await think<'positive' | 'negative' | 'neutral'>("Analyze the sentiment of the following message: " + message);
+const sentiment = await think<'positive' | 'negative' | 'neutral'>('Analyze the sentiment of the following message: ' + message)
 ```
 
 ```ts
 const git_diff = `...`
-const commit_message = await think<string>("Write a commit message for the following git diff: " + git_diff);
+const commit_message = await think<string>('Write a commit message for the following git diff: ' + git_diff)
 ```
 
 ### `act`
@@ -131,25 +178,20 @@ const commit_message = await think<string>("Write a commit message for the follo
 Asks the agent to do some action
 
 ```ts
-function act<T = void>(task: string): Promise<T>;
+function act<T = void>(task: string): Promise<T>
 ```
 
 **Examples:**
 
 ```ts
-const commit_message = "Add new feature ...";
-await act("Commit the changes with the following message: " + commit_message);
+const commit_message = 'Add new feature ...'
+await act('Commit the changes with the following message: ' + commit_message)
 ```
 
 ```ts
-await act("Give the user a summary of what you did");
+await act('Give the user a summary of what you did')
 ```
 
 ```ts
-const age = await act<number>("Ask the user their age");
+const age = await act<number>('Ask the user their age')
 ```
-
-## Two important conventions
-
-- The functions called by `main` must be stateless (do not rely on global variables shared between different calls), because the `mantiq call` command will call the function on a separate process each time.
-- The special functions (`think` and `act`) can only be called from the `main` function. Calling them from other functions will result in an error.
