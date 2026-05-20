@@ -1,5 +1,0 @@
----
-'mantiq': patch
----
-
-First version

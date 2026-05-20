@@ -20,7 +20,7 @@
     "windsurf"
   ],
   "license": "MIT",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": "webNeat/mantiq",
   "homepage": "https://github.com/webNeat/mantiq",
   "type": "module",
