@@ -195,3 +195,13 @@ await act('Give the user a summary of what you did')
 ```ts
 const age = await act<number>('Ask the user their age')
 ```
+
+## Next steps
+
+- Add a new `mantiq alias <name> <script-path>` command to create aliases for specific scripts, so it's easier to execute them with `/mantiq <name>` and the source code is totally hidden from the agent.
+
+- Add a validation step to `mantiq code` to check that the script follows the constraints before returning the code to the agent:
+  - Check that a `main` function is exported
+  - Check that all exported functions have at most one parameter
+  - Check that only the `main` function calls `think` and `act` functions
+  - Check that all other functions called by the `main` function are exported
