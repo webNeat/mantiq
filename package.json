@@ -45,8 +45,8 @@
   "scripts": {
     "build": "tsup",
     "pretest": "pnpm build",
-    "test": "vitest run",
-    "test-watch": "vitest",
+    "test": "MANTIQ_CONFIG_PATH=tests/mantiq.json vitest run",
+    "test-watch": "MANTIQ_CONFIG_PATH=tests/mantiq.json vitest",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "release": "pnpm build && changeset publish",

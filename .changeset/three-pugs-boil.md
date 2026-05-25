@@ -1,0 +1,5 @@
+---
+'mantiq': minor
+---
+
+Add aliases

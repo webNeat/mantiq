@@ -48,4 +48,10 @@ describe('mantiq call', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stderr).toContain('Invalid JSON parameter')
   })
+
+  it('resolves alias when calling a function', async () => {
+    await $`${bin} alias call-basic-alias ${examples}/call-basic.ts`.quiet()
+    const output = await $`${bin} call call-basic-alias add '{"a":1,"b":2}'`.quiet()
+    expect(JSON.parse(output.stdout)).toEqual(3)
+  })
 })
