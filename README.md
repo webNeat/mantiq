@@ -19,7 +19,8 @@ Human language is inherently ambiguous and when we add that to LLMs tendency to 
 - [Usage in 2 steps](#usage-in-2-steps)
 - [How it works](#how-it-works)
 - [Writing mantiq prompts](#writing-mantiq-prompts)
-- [Two important conventions](#two-important-conventions)
+- [Advanced usage](#advanced-usage)
+- [Next steps](#next-steps)
 
 ## Requirements
 
@@ -196,9 +197,36 @@ await act('Give the user a summary of what you did')
 const age = await act<number>('Ask the user their age')
 ```
 
-## Next steps
+## Advanced usage
 
-- Add a new `mantiq alias <name> <script-path>` command to create aliases for specific scripts, so it's easier to execute them with `/mantiq <name>` and the source code is totally hidden from the agent.
+### Using aliases to hide source code
+
+You can create aliases for specific scripts to make them easier to execute with `/mantiq <name>` and keep the source code hidden from the agent.
+
+```bash
+mantiq alias my-alias /path/to/my-script.ts
+```
+
+Then you can execute it with:
+
+```bash
+/mantiq my-alias
+```
+
+### Composing prompts
+
+You can call a mantiq prompt from within another by simply asking the agent to do so.
+
+```ts
+import {act} from 'mantiq'
+
+async function main() {
+  // ...
+  await act("Execute `/mantiq another-prompt` in a sub-agent")
+}
+```
+
+## Next steps
 
 - Add a validation step to `mantiq code` to check that the script follows the constraints before returning the code to the agent:
   - Check that a `main` function is exported

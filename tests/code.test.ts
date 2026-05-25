@@ -162,4 +162,10 @@ describe('mantiq code', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stderr).toContain('Could not parse file')
   })
+
+  it('resolves alias when running code', async () => {
+    await $`${bin} alias basic-alias ${examples}/basic.ts`.quiet()
+    const output = await $`${bin} code basic-alias`.quiet()
+    expect(output.stdout).toContain('declare function greet(): string;')
+  })
 })

@@ -1,6 +1,9 @@
-import path from 'node:path'
-import fs from 'node:fs/promises'
-import url from 'node:url'
+import os from 'os'
+import url from 'url'
+import path from 'path'
+import fs from 'fs/promises'
+
+export const config_path = process.env.MANTIQ_CONFIG_PATH || path.join(os.homedir(), '.mantiq/config.json')
 
 const dist_path = path.dirname(url.fileURLToPath(import.meta.url))
 const is_nested = dist_path.endsWith('/cli') || dist_path.endsWith('/lib')
