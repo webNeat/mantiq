@@ -5,10 +5,10 @@ import { defineConfig } from 'tsup'
 const project_root = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/*/index.ts'],
+  entry: ['src/config.ts', 'src/index.ts', 'src/*/index.ts'],
   format: ['esm'],
   dts: true,
-  splitting: false,
+  splitting: true,
   sourcemap: true,
   clean: true,
   esbuildOptions(options) {

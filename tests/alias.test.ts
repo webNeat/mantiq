@@ -2,9 +2,9 @@ import { $ } from 'zx'
 import path from 'path'
 import fs from 'fs/promises'
 import { describe, it, expect, beforeEach } from 'vitest'
+import { config_path } from '@src/config'
 
 const bin = path.resolve('bin/mantiq')
-const config_path = '/tmp/mantiq.json'
 
 describe('mantiq alias', () => {
   beforeEach(async () => {
